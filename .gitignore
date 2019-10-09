@@ -69,3 +69,6 @@ fabric.properties
 
 # Ignore all csv files
 *.csv
+
+# Ignore all log files
+*.log

@@ -110,8 +110,8 @@ public class AutomationTest {
 
     private static final int limitById = 20;
     private static final int limitTotal = 1000;
-    private static final int productsToGenerate = 12000000;
-    private static final int filesToCreate = 10000;
+    private static final int productsToGenerate = 100000;
+    private static final int filesToCreate = 100;
 
     private static final boolean includeHeaders = false;
     private static final char delimiter = ',';

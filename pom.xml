@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>net.ddns.arnautovevgeny</groupId>
-    <artifactId>cheapestProducts</artifactId>
+    <artifactId>priceList</artifactId>
     <version>1.0</version>
 
     <properties>
