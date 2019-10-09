@@ -1,0 +1,2 @@
+Main-Class: net.ddns.arnautovevgeny.pricelist.CheapestProducts
+Manifest-Version: 1.0
