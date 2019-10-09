@@ -1,2 +1,2 @@
-Main-Class: net.ddns.arnautovevgeny.pricelist.CheapestProducts
+Main-Class: net.ddns.arnautovevgeny.pricelist.PriceList
 Manifest-Version: 1.0

@@ -63,10 +63,6 @@ public class Product implements Comparable<Product> {
         if (stateCompared != 0)
             return stateCompared;
 
-        int idCompared = Integer.compare(this.id, o.getId());
-        if (idCompared != 0)
-            return idCompared;
-
-        return 0;
+        return Integer.compare(this.id, o.getId());
     }
 }

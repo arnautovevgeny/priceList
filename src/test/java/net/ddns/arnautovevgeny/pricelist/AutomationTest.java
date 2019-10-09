@@ -191,21 +191,21 @@ public class AutomationTest {
 
     @Test
     public void testViaStream() throws IOException {
-        CheapestProducts cheapestProducts = new CheapestProducts(Paths.get("resultStream.csv"), includeHeaders, delimiter);
-        cheapestProducts.processViaStreamAPI(this.csvFiles);
+        PriceList priceList = new PriceList(Paths.get("resultStream.csv"), includeHeaders, delimiter);
+        priceList.processViaStreamAPI(this.csvFiles);
 
-        Collection<Product> actual = cheapestProducts.getProducts();
-        cheapestProducts.output();
+        Collection<Product> actual = priceList.getProducts();
+        priceList.output();
 
         assertEquals(this.expectedProducts, actual);
     }
 
     private void producerConsumer(boolean loadBalancer) throws IOException, InterruptedException {
-        CheapestProducts cheapestProducts = new CheapestProducts(Paths.get("resultProducerConsumer.csv"), includeHeaders, delimiter);
-        cheapestProducts.processViaProducerConsumer(this.csvFiles, loadBalancer);
+        PriceList priceList = new PriceList(Paths.get("resultProducerConsumer.csv"), includeHeaders, delimiter);
+        priceList.processViaProducerConsumer(this.csvFiles, loadBalancer);
 
-        Collection<Product> actual = cheapestProducts.getProducts();
-        cheapestProducts.output();
+        Collection<Product> actual = priceList.getProducts();
+        priceList.output();
 
         assertEquals(this.expectedProducts, actual);
     }

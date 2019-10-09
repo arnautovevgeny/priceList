@@ -11,8 +11,8 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.stream.Stream;
 
-public class CheapestProducts {
-    private static final Logger log = LoggerFactory.getLogger(CheapestProducts.class);
+public class PriceList {
+    private static final Logger log = LoggerFactory.getLogger(PriceList.class);
 
     @Getter
     private Collection<Product> products;
@@ -20,7 +20,7 @@ public class CheapestProducts {
     private boolean includeHeaders;
     private char delimiter;
 
-    public CheapestProducts(Path path, boolean includeHeaders, char delimiter) {
+    public PriceList(Path path, boolean includeHeaders, char delimiter) {
         this.path = path;
         this.includeHeaders = includeHeaders;
         this.delimiter = delimiter;
@@ -30,11 +30,11 @@ public class CheapestProducts {
         if (csvFiles.length != 0) {
             Path path = Paths.get("result.csv");
 
-            CheapestProducts cheapestProducts = new CheapestProducts(path, false, ',');
-            cheapestProducts.processViaStreamAPI(csvFiles);
-            log.info("Result contains {} elements", cheapestProducts.getSize());
+            PriceList priceList = new PriceList(path, false, ',');
+            priceList.processViaStreamAPI(csvFiles);
+            log.info("Result contains {} elements", priceList.getSize());
 
-            cheapestProducts.output();
+            priceList.output();
             log.info("Finished");
         }
         else
