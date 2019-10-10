@@ -26,26 +26,45 @@ import static org.junit.Assert.assertEquals;
 
 public class AutomationTest {
     private static class RandomProductGenerator implements Supplier<Product> {
-        private static final Random random = new Random();
-        private static final AtomicInteger numberSequence = new AtomicInteger();
-        private static final Queue<Integer> idsToReuse = new ConcurrentLinkedQueue<>();
-        private static final int maximalPriceInCents = 9999999;
+        private static final int maxPriceInCentsDefault = 9999999;
+
+        private final Random random = new Random();
+        private final Queue<Integer> idsToReuse = new ConcurrentLinkedQueue<>();
+
+        private final int minimalPriceInCents;
+        private final int maximalPriceInCents;
+        private final AtomicInteger numberSequence;
+
+        RandomProductGenerator(int minimalId, int minimalPriceInCents, int maximalPriceInCents) {
+            if (minimalPriceInCents <= 0 || maximalPriceInCents <= 0 || minimalPriceInCents > maximalPriceInCents)
+                throw new IllegalArgumentException();
+
+            this.numberSequence = new AtomicInteger(minimalId);
+            this.minimalPriceInCents = minimalPriceInCents;
+            this.maximalPriceInCents = maximalPriceInCents;
+        }
+
+        RandomProductGenerator(int minimalId) {
+            this(minimalId, 1, maxPriceInCentsDefault);
+        }
+
+        RandomProductGenerator() {
+            this(0);
+        }
 
         @Override
         public Product get() {
-            Integer id;
+            Integer id = null;
             boolean newIdNeeded = random.nextBoolean();
-            if (newIdNeeded)
-                id = numberSequence.incrementAndGet();
-            else {
+            if (!newIdNeeded)
                 id = idsToReuse.poll();
-                if (id == null) {
-                    id = numberSequence.incrementAndGet();
-                }
-            }
+
+            if (id == null)
+                id = numberSequence.incrementAndGet();
 
             idsToReuse.offer(id);
-            float randomPrice = (random.nextInt() & Integer.MAX_VALUE) % maximalPriceInCents;
+
+            float randomPrice = minimalPriceInCents + random.nextInt(maximalPriceInCents - minimalPriceInCents + 1);
             randomPrice /= 100;
 
             return new Product(id, "product " + id, "new", "ok", randomPrice);
@@ -88,7 +107,7 @@ public class AutomationTest {
             emptyLinesPool.offer(entry);
         }
 
-        public void addLine(Path path, String[] line) {
+        void addLine(Path path, String[] line) {
             Queue<String[]> newEntry = getFromPool();
 
             Queue<String[]> entry = storage.putIfAbsent(path, newEntry);
