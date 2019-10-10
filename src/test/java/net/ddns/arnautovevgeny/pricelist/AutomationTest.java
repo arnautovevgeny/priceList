@@ -2,9 +2,10 @@ package net.ddns.arnautovevgeny.pricelist;
 
 import de.siegmar.fastcsv.writer.CsvWriter;
 import lombok.Getter;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +23,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AutomationTest {
     private static class RandomProductGenerator implements Supplier<Product> {
@@ -130,24 +131,24 @@ public class AutomationTest {
 
     private static final Logger log = LoggerFactory.getLogger(AutomationTest.class);
 
-    private final FileNameGenerator fileNameGenerator = new FileNameGenerator(System.getProperty("user.home") + "\\generated");
-    private final CsvWriter csvWriter = new CsvWriter();
+    private final static FileNameGenerator fileNameGenerator = new FileNameGenerator(System.getProperty("user.home") + "\\generated");
+    private final static CsvWriter csvWriter = new CsvWriter();
 
     private static final int limitById = 20;
     private static final int limitTotal = 1000;
-    private static final int productsToGenerateLimit = 100000;
-    private static final int filesToCreate = 100;
+    private static final int productsToGenerateLimit = 1000000;
+    private static final int filesToCreate = 1000;
 
     private static final boolean includeHeaders = false;
     private static final char delimiter = ',';
 
     private static final int expectedProductsMaxPriceInCents = 99999;
-    private Collection<Product> expectedProducts;
+    private static Collection<Product> expectedProducts;
 
-    private String[] csvFiles;
-    private Path[] csvPaths;
+    private static String[] csvFiles;
+    private static Path[] csvPaths;
 
-    private void calcExpectedResult() {
+    private static void calcExpectedResult() {
         RandomProductGenerator expectedProductsGenerator = new RandomProductGenerator(1, RandomProductGenerator.minPriceInCentsDefault, expectedProductsMaxPriceInCents);
 
         Map<Integer, NavigableSet<Product>> groupedByID = Stream.generate(expectedProductsGenerator).parallel().limit(10 * limitTotal * limitById).
@@ -164,17 +165,17 @@ public class AutomationTest {
                 }
         ).flatMap(Collection::stream).collect(Collectors.toCollection(ConcurrentSkipListSet::new));
 
-        this.expectedProducts = new LinkedList<>(expectedBeforeShrink.stream().limit(limitTotal).collect(Collectors.toCollection(ConcurrentSkipListSet::new)));
+        expectedProducts = expectedBeforeShrink.stream().limit(limitTotal).collect(Collectors.toCollection(ConcurrentSkipListSet::new));
     }
 
-    private void createCsvFiles(Collection<Product> generatedProducts, Path[] pathsArray) {
+    private static void createCsvFiles(Stream<Product> generatedProducts, Path[] pathsArray) {
         int pathSize = pathsArray.length;
         log.info("pathsArray was generated with size {}", pathSize);
 
         Random random = new Random();
         LinesByPath linesByPath = new LinesByPath();
 
-        generatedProducts.parallelStream().map(
+        generatedProducts.parallel().map(
                 product -> new String[]{Integer.toString(product.getId()), product.getName(), product.getCondition(), product.getState(), Float.toString(product.getPrice())}
         ).forEach(line -> {
                     Path path = pathsArray[(random.nextInt() & Integer.MAX_VALUE) % pathSize];
@@ -196,14 +197,14 @@ public class AutomationTest {
         });
     }
 
-    private Collection<Product> generateProducts()
+    private static Stream<Product> generateProducts()
     {
-        this.calcExpectedResult();
+        calcExpectedResult();
 
-        int expectedResultSize = this.expectedProducts.size();
+        int expectedResultSize = expectedProducts.size();
         log.info("Expected result is obtained. It contains {} elements", expectedResultSize);
 
-        int maxExpectedId = (this.expectedProducts.stream().mapToInt(Product::getId).max().orElse(0));
+        int maxExpectedId = (expectedProducts.stream().mapToInt(Product::getId).max().orElse(0));
         int maxExpectedPriceInCents = expectedProductsMaxPriceInCents + 1;
 
         int minimalAdditionId = maxExpectedId + 1;
@@ -217,21 +218,20 @@ public class AutomationTest {
 
         Stream<Product> additionStream = Stream.generate(additionalGenerator).limit(additionLimit);
 
-        return Stream.concat(additionStream, this.expectedProducts.stream()).
-                collect(Collectors.toCollection(ConcurrentLinkedQueue::new));
+        return Stream.concat(additionStream, expectedProducts.stream());
     }
 
-    @Before
-    public void createFiles() {
-        var generatedProducts = this.generateProducts();
+    @BeforeAll
+    public static void createFiles() {
+        var generatedProducts = generateProducts();
 
-        this.csvFiles = Stream.generate(this.fileNameGenerator).limit(filesToCreate).toArray(String[]::new);
+        csvFiles = Stream.generate(fileNameGenerator).limit(filesToCreate).toArray(String[]::new);
 
-        this.csvPaths = Stream.of(this.csvFiles).map(filename -> Paths.get(filename)).toArray(Path[]::new);
+        csvPaths = Stream.of(csvFiles).map(filename -> Paths.get(filename)).toArray(Path[]::new);
 
-        this.createCsvFiles(generatedProducts, this.csvPaths);
+        createCsvFiles(generatedProducts, csvPaths);
 
-        log.info("{} files was generated in {}", filesToCreate, Paths.get(this.fileNameGenerator.getTemplateName()).getParent().toAbsolutePath());
+        log.info("{} files was generated in {}", filesToCreate, Paths.get(fileNameGenerator.getTemplateName()).getParent().toAbsolutePath());
     }
 
     @Test
@@ -242,7 +242,7 @@ public class AutomationTest {
         Collection<Product> actual = priceList.getProducts();
         priceList.output();
 
-        assertEquals(this.expectedProducts, actual);
+        assertEquals(new LinkedList<>(this.expectedProducts), actual);
     }
 
     private void producerConsumer(boolean loadBalancer) throws IOException, InterruptedException {
@@ -252,7 +252,7 @@ public class AutomationTest {
         Collection<Product> actual = priceList.getProducts();
         priceList.output();
 
-        assertEquals(this.expectedProducts, actual);
+        assertEquals(new LinkedList<>(this.expectedProducts), actual);
     }
 
     @Test
@@ -265,15 +265,15 @@ public class AutomationTest {
         this.producerConsumer(true);
     }
 
-    @After
-    public void outputExpectedResult() throws IOException {
+    @AfterAll
+    public static void outputExpectedResult() throws IOException {
         ResultOutput resultOutput = new ResultOutputCsv(Paths.get("expected.csv"), includeHeaders, delimiter);
-        resultOutput.output(this.expectedProducts);
+        resultOutput.output(expectedProducts);
     }
 
-    @After
-    public void removeGeneratedFiles() throws IOException {
-        for (Path path : this.csvPaths)
+    @AfterAll
+    public static void removeGeneratedFiles() throws IOException {
+        for (Path path : csvPaths)
             Files.deleteIfExists(path);
     }
 }

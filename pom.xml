@@ -13,7 +13,7 @@
         <java.version>11</java.version>
         <mvncompiler.version>3.8.1</mvncompiler.version>
         <logback.version>1.2.3</logback.version>
-        <junit.version>4.12</junit.version>
+        <junit.version>5.5.2</junit.version>
         <lombok.version>1.18.10</lombok.version>
         <fastcsv.version>1.0.3</fastcsv.version>
     </properties>
@@ -26,11 +26,11 @@
             <version>${logback.version}</version>
         </dependency>
 
-        <!-- Junit -->
+        <!-- JUnit 5-->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.5.2</version>
             <scope>test</scope>
         </dependency>
 
