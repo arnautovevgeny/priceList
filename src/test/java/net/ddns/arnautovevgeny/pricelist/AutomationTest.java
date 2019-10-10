@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class AutomationTest {
+class AutomationTest {
     private static class RandomProductGenerator implements Supplier<Product> {
         static final int minPriceInCentsDefault = 1;
         static final int maxPriceInCentsDefault = 9999999;
@@ -222,7 +222,7 @@ public class AutomationTest {
     }
 
     @BeforeAll
-    public static void createFiles() {
+    static void createFiles() {
         var generatedProducts = generateProducts();
 
         csvFiles = Stream.generate(fileNameGenerator).limit(filesToCreate).toArray(String[]::new);
@@ -235,44 +235,44 @@ public class AutomationTest {
     }
 
     @Test
-    public void testViaStream() throws IOException {
+    void testViaStream() throws IOException {
         PriceList priceList = new PriceList(Paths.get("resultStream.csv"), includeHeaders, delimiter);
-        priceList.processViaStreamAPI(this.csvFiles);
+        priceList.processViaStreamAPI(csvFiles);
 
         Collection<Product> actual = priceList.getProducts();
         priceList.output();
 
-        assertEquals(new LinkedList<>(this.expectedProducts), actual);
+        assertEquals(new LinkedList<>(expectedProducts), actual);
     }
 
     private void producerConsumer(boolean loadBalancer) throws IOException, InterruptedException {
         PriceList priceList = new PriceList(Paths.get("resultProducerConsumer.csv"), includeHeaders, delimiter);
-        priceList.processViaProducerConsumer(this.csvFiles, loadBalancer);
+        priceList.processViaProducerConsumer(csvFiles, loadBalancer);
 
         Collection<Product> actual = priceList.getProducts();
         priceList.output();
 
-        assertEquals(new LinkedList<>(this.expectedProducts), actual);
+        assertEquals(new LinkedList<>(expectedProducts), actual);
     }
 
     @Test
-    public void testViaProducerConsumer() throws IOException, InterruptedException {
+    void testViaProducerConsumer() throws IOException, InterruptedException {
         this.producerConsumer(false);
     }
 
     @Test
-    public void testViaProducerConsumerLoadBalancer() throws IOException, InterruptedException {
+    void testViaProducerConsumerLoadBalancer() throws IOException, InterruptedException {
         this.producerConsumer(true);
     }
 
     @AfterAll
-    public static void outputExpectedResult() throws IOException {
+    static void outputExpectedResult() throws IOException {
         ResultOutput resultOutput = new ResultOutputCsv(Paths.get("expected.csv"), includeHeaders, delimiter);
         resultOutput.output(expectedProducts);
     }
 
     @AfterAll
-    public static void removeGeneratedFiles() throws IOException {
+    static void removeGeneratedFiles() throws IOException {
         for (Path path : csvPaths)
             Files.deleteIfExists(path);
     }
