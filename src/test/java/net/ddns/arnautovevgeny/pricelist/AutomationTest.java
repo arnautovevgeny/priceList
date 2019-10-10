@@ -26,7 +26,8 @@ import static org.junit.Assert.assertEquals;
 
 public class AutomationTest {
     private static class RandomProductGenerator implements Supplier<Product> {
-        private static final int maxPriceInCentsDefault = 9999999;
+        static final int minPriceInCentsDefault = 1;
+        static final int maxPriceInCentsDefault = 9999999;
 
         private final Random random = new Random();
         private final Queue<Integer> idsToReuse = new ConcurrentLinkedQueue<>();
@@ -36,35 +37,41 @@ public class AutomationTest {
         private final AtomicInteger numberSequence;
 
         RandomProductGenerator(int minimalId, int minimalPriceInCents, int maximalPriceInCents) {
-            if (minimalPriceInCents <= 0 || maximalPriceInCents <= 0 || minimalPriceInCents > maximalPriceInCents)
+            if (minimalId <= 0 || minimalPriceInCents <= 0 || maximalPriceInCents <= 0 || minimalPriceInCents > maximalPriceInCents) {
+                log.error("minimalId {}, minimalPriceInCents {}, maximalPriceInCents {}", minimalId, minimalPriceInCents, maximalPriceInCents);
                 throw new IllegalArgumentException();
+            }
 
             this.numberSequence = new AtomicInteger(minimalId);
             this.minimalPriceInCents = minimalPriceInCents;
             this.maximalPriceInCents = maximalPriceInCents;
         }
 
+        RandomProductGenerator(int minimalId, int minimalPriceInCents) {
+            this(minimalId, minimalPriceInCents, maxPriceInCentsDefault);
+        }
+
         RandomProductGenerator(int minimalId) {
-            this(minimalId, 1, maxPriceInCentsDefault);
+            this(minimalId, minPriceInCentsDefault);
         }
 
         RandomProductGenerator() {
-            this(0);
+            this(1);
         }
 
         @Override
         public Product get() {
             Integer id = null;
-            boolean newIdNeeded = random.nextBoolean();
+            boolean newIdNeeded = this.random.nextBoolean();
             if (!newIdNeeded)
-                id = idsToReuse.poll();
+                id = this.idsToReuse.poll();
 
             if (id == null)
-                id = numberSequence.incrementAndGet();
+                id = this.numberSequence.getAndIncrement();
 
-            idsToReuse.offer(id);
+            this.idsToReuse.offer(id);
 
-            float randomPrice = minimalPriceInCents + random.nextInt(maximalPriceInCents - minimalPriceInCents + 1);
+            float randomPrice = this.minimalPriceInCents + this.random.nextInt(maximalPriceInCents - minimalPriceInCents + 1);
             randomPrice /= 100;
 
             return new Product(id, "product " + id, "new", "ok", randomPrice);
@@ -123,23 +130,29 @@ public class AutomationTest {
 
     private static final Logger log = LoggerFactory.getLogger(AutomationTest.class);
 
-    private final RandomProductGenerator randomProductGenerator = new RandomProductGenerator();
     private final FileNameGenerator fileNameGenerator = new FileNameGenerator(System.getProperty("user.home") + "\\generated");
     private final CsvWriter csvWriter = new CsvWriter();
 
     private static final int limitById = 20;
     private static final int limitTotal = 1000;
-    private static final int productsToGenerate = 100000;
+    private static final int productsToGenerateLimit = 100000;
     private static final int filesToCreate = 100;
 
     private static final boolean includeHeaders = false;
     private static final char delimiter = ',';
 
+    private static final int expectedProductsMaxPriceInCents = 99999;
     private Collection<Product> expectedProducts;
+
     private String[] csvFiles;
     private Path[] csvPaths;
 
-    private static Collection<Product> getExpectedResult(Map<Integer, NavigableSet<Product>> groupedByID) {
+    private void calcExpectedResult() {
+        RandomProductGenerator expectedProductsGenerator = new RandomProductGenerator(1, RandomProductGenerator.minPriceInCentsDefault, expectedProductsMaxPriceInCents);
+
+        Map<Integer, NavigableSet<Product>> groupedByID = Stream.generate(expectedProductsGenerator).parallel().limit(10 * limitTotal * limitById).
+                collect(Collectors.groupingByConcurrent(Product::getId, Collectors.toCollection(ConcurrentSkipListSet::new)));
+
         var expectedBeforeShrink = groupedByID.entrySet().parallelStream().map(e -> {
                     NavigableSet<Product> products = e.getValue();
 
@@ -151,8 +164,7 @@ public class AutomationTest {
                 }
         ).flatMap(Collection::stream).collect(Collectors.toCollection(ConcurrentSkipListSet::new));
 
-        var expected = expectedBeforeShrink.stream().limit(limitTotal).collect(Collectors.toCollection(ConcurrentSkipListSet::new));
-        return new LinkedList<>(expected);
+        this.expectedProducts = new LinkedList<>(expectedBeforeShrink.stream().limit(limitTotal).collect(Collectors.toCollection(ConcurrentSkipListSet::new)));
     }
 
     private void createCsvFiles(Collection<Product> generatedProducts, Path[] pathsArray) {
@@ -184,20 +196,34 @@ public class AutomationTest {
         });
     }
 
+    private Collection<Product> generateProducts()
+    {
+        this.calcExpectedResult();
+
+        int expectedResultSize = this.expectedProducts.size();
+        log.info("Expected result is obtained. It contains {} elements", expectedResultSize);
+
+        int maxExpectedId = (this.expectedProducts.stream().mapToInt(Product::getId).max().orElse(0));
+        int maxExpectedPriceInCents = expectedProductsMaxPriceInCents + 1;
+
+        int minimalAdditionId = maxExpectedId + 1;
+        int minimalAdditionPriceInCents = maxExpectedPriceInCents + 1;
+
+        log.info("minimal addition id {}, minimal addition price in cents {}", minimalAdditionId, minimalAdditionPriceInCents);
+
+        RandomProductGenerator additionalGenerator = new RandomProductGenerator(minimalAdditionId, minimalAdditionPriceInCents);
+
+        int additionLimit = productsToGenerateLimit - expectedResultSize;
+
+        Stream<Product> additionStream = Stream.generate(additionalGenerator).limit(additionLimit);
+
+        return Stream.concat(additionStream, this.expectedProducts.stream()).
+                collect(Collectors.toCollection(ConcurrentLinkedQueue::new));
+    }
+
     @Before
     public void createFiles() {
-        Collection<Product> generatedProducts = Stream.generate(randomProductGenerator).parallel().
-                limit(productsToGenerate).collect(Collectors.toCollection(ConcurrentLinkedQueue::new));
-
-        log.info("{} products was generated in a parallel manner", generatedProducts.size());
-
-        Map<Integer, NavigableSet<Product>> groupedByID = generatedProducts.parallelStream().
-                collect(Collectors.groupingByConcurrent(Product::getId, Collectors.toCollection(ConcurrentSkipListSet::new)));
-
-        log.info("Products was grouped onto a ConcurrentHashMap<K,V> by ProductId as a K");
-
-        this.expectedProducts = getExpectedResult(groupedByID);
-        log.info("Expected result is obtained. It contains {} elements", this.expectedProducts.size());
+        var generatedProducts = this.generateProducts();
 
         this.csvFiles = Stream.generate(this.fileNameGenerator).limit(filesToCreate).toArray(String[]::new);
 
