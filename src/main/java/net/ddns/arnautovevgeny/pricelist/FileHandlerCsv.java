@@ -33,7 +33,7 @@ public class FileHandlerCsv implements FileHandler {
         linesRead.set(0);
     }
 
-    public FileHandlerCsv(boolean containsHeaders, char delimiter, int chunkSize) {
+    FileHandlerCsv(boolean containsHeaders, char delimiter, int chunkSize) {
         this.csvReader = new CsvReader();
         this.csvReader.setContainsHeader(containsHeaders);
         this.csvReader.setFieldSeparator(delimiter);
@@ -48,7 +48,8 @@ public class FileHandlerCsv implements FileHandler {
             csvParser = csvReader.parse(path, StandardCharsets.UTF_8);
         }
         catch (IOException e) {
-            log.error("Can't deal with handle");
+            log.error("Can't deal with handle of {} file", filename);
+            setInactive();
         }
     }
 
