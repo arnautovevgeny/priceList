@@ -2,10 +2,9 @@ package net.ddns.arnautovevgeny.pricelist;
 
 import de.siegmar.fastcsv.writer.CsvWriter;
 import lombok.Getter;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +22,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 
 class AutomationTest {
     private static class RandomProductGenerator implements Supplier<Product> {
@@ -242,7 +241,7 @@ class AutomationTest {
         Collection<Product> actual = priceList.getProducts();
         priceList.output();
 
-        assertEquals(new LinkedList<>(expectedProducts), actual);
+        assertIterableEquals(expectedProducts, actual);
     }
 
     private void producerConsumer(boolean loadBalancer) throws IOException, InterruptedException {
@@ -252,7 +251,7 @@ class AutomationTest {
         Collection<Product> actual = priceList.getProducts();
         priceList.output();
 
-        assertEquals(new LinkedList<>(expectedProducts), actual);
+        assertIterableEquals(expectedProducts, actual);
     }
 
     @Test
