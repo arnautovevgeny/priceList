@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntUnaryOperator;
 
-public class TasksBroker {
+public class TasksBroker implements AutoCloseable{
     private static final Logger log = LoggerFactory.getLogger(TasksBroker.class);
 
     private static final int maxProductsInQueue = 100000;
@@ -320,5 +320,10 @@ public class TasksBroker {
             log.error("Trying to get result while not ready");
             return new LinkedList<>();
         }
+    }
+
+    @Override
+    public void close() {
+        this.storageResult.close();
     }
 }

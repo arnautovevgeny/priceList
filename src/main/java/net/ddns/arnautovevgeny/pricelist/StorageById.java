@@ -12,7 +12,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-class StorageById {
+class StorageById implements AutoCloseable {
     private class Entry {
         private NavigableSet<Product> products = new ConcurrentSkipListSet<>();
         private AtomicInteger approximateSize = new AtomicInteger();
@@ -70,6 +70,10 @@ class StorageById {
         private void add(Entry entry) {
             entry.reset();
             this.entriesPool.offer(entry);
+        }
+
+        private void clear() {
+            this.entriesPool.clear();
         }
     }
 
@@ -152,6 +156,20 @@ class StorageById {
             }
 
             return removed;
+        }
+        finally {
+            this.exclusiveLock.unlock();
+        }
+    }
+
+    @Override
+    public void close() {
+        this.exclusiveLock.lock();
+
+        try {
+            this.idsToShrink.clear();
+            this.entriesPool.clear();
+            this.storage.clear();
         }
         finally {
             this.exclusiveLock.unlock();

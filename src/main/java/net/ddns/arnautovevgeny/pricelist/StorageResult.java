@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.StampedLock;
 
-public class StorageResult {
+public class StorageResult implements AutoCloseable {
     private static Logger log = LoggerFactory.getLogger(StorageResult.class);
 
     private static final int limitTotal = 1000;
@@ -167,5 +167,17 @@ public class StorageResult {
         log.info("All elements was read, totally read {}", this.readTotal.get());
 
         this.stopped.set(true);
+    }
+
+    @Override
+    public void close() {
+        long stamp = stampedLock.writeLock();
+        try {
+            this.storage.clear();
+            this.storageById.close();
+        }
+        finally {
+            stampedLock.unlock(stamp);
+        }
     }
 }

@@ -42,35 +42,37 @@ public class PriceList {
     }
 
     public void processViaProducerConsumer(String[] csvFiles, boolean loadBalancer) throws InterruptedException {
-        TasksBroker tasksBroker = new TasksBroker(csvFiles, this.includeHeaders, this.delimiter);
-        tasksBroker.start(loadBalancer);
+        try (TasksBroker tasksBroker = new TasksBroker(csvFiles, this.includeHeaders, this.delimiter)) {
+            tasksBroker.start(loadBalancer);
 
-        tasksBroker.awaitsTermination();
+            tasksBroker.awaitsTermination();
 
-        this.products = tasksBroker.getResult();
+            this.products = tasksBroker.getResult();
+        }
     }
 
     public void processViaStreamAPI(String[] csvFiles) {
         String strDelimiter = "" + this.delimiter;
-        StorageResult storageResult = new StorageResult();
+        try (StorageResult storageResult = new StorageResult()) {
 
-        Stream<Path> pathStream = Stream.of(csvFiles).parallel().map(file -> Paths.get(file));
-        Stream<String> lines = pathStream.flatMap(path -> {
-            try {
-                Stream<String> linesOfFile = Files.lines(path);
-                if (this.includeHeaders) {
-                    linesOfFile = linesOfFile.skip(1);
+            Stream<Path> pathStream = Stream.of(csvFiles).parallel().map(file -> Paths.get(file));
+            Stream<String> lines = pathStream.flatMap(path -> {
+                try {
+                    Stream<String> linesOfFile = Files.lines(path);
+                    if (this.includeHeaders) {
+                        linesOfFile = linesOfFile.skip(1);
+                    }
+
+                    return linesOfFile;
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+                return Stream.empty();
+            });
 
-                return linesOfFile;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return Stream.empty();
-        });
-
-        lines.map(line -> new ProductCSVArray(line.split(strDelimiter))).forEach(storageResult::proceed);
-        this.products = storageResult.getResult();
+            lines.map(line -> new ProductCSVArray(line.split(strDelimiter))).forEach(storageResult::proceed);
+            this.products = storageResult.getResult();
+        }
     }
 
     public void output() throws IOException {
