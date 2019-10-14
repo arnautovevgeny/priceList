@@ -1,8 +1,7 @@
 package net.ddns.arnautovevgeny.pricelist;
 
 import lombok.Getter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,9 +10,8 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.stream.Stream;
 
+@Slf4j
 public class PriceList {
-    private static final Logger log = LoggerFactory.getLogger(PriceList.class);
-
     @Getter
     private Collection<Product> products;
     private Path path;

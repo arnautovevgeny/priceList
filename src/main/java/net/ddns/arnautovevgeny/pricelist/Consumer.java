@@ -1,13 +1,12 @@
 package net.ddns.arnautovevgeny.pricelist;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class Consumer implements Runnable {
-    private static final Logger log = LoggerFactory.getLogger(Consumer.class);
     private static final AtomicInteger productsTotal = new AtomicInteger();
     private static final int productsToInfoOutput = 10000;
 

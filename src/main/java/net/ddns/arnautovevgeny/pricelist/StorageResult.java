@@ -1,7 +1,6 @@
 package net.ddns.arnautovevgeny.pricelist;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -12,9 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.StampedLock;
 
+@Slf4j
 public class StorageResult implements AutoCloseable {
-    private static Logger log = LoggerFactory.getLogger(StorageResult.class);
-
     private static final int limitTotal = 1000;
     private static final long operationsToCleanUp = 1000;
     private static final long outputProceedCount = 10000;

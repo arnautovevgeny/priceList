@@ -1,7 +1,6 @@
 package net.ddns.arnautovevgeny.pricelist;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -9,9 +8,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntUnaryOperator;
 
+@Slf4j
 public class TasksBroker implements AutoCloseable{
-    private static final Logger log = LoggerFactory.getLogger(TasksBroker.class);
-
     private static final int maxProductsInQueue = 100000;
     private static final int maxProductsToProduce = maxProductsInQueue / 100;
     private static final int maxProductsToConsume = maxProductsToProduce / 2;

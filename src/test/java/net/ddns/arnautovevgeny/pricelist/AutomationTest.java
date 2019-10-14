@@ -2,11 +2,10 @@ package net.ddns.arnautovevgeny.pricelist;
 
 import de.siegmar.fastcsv.writer.CsvWriter;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -24,6 +23,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 
+@Slf4j
 class AutomationTest {
     private static class RandomProductGenerator implements Supplier<Product> {
         static final int minPriceInCentsDefault = 1;
@@ -127,8 +127,6 @@ class AutomationTest {
             entry.offer(line);
         }
     }
-
-    private static final Logger log = LoggerFactory.getLogger(AutomationTest.class);
 
     private final static FileNameGenerator fileNameGenerator = new FileNameGenerator(System.getProperty("user.home") + "\\generated");
     private final static CsvWriter csvWriter = new CsvWriter();
