@@ -1,15 +1,10 @@
-net\ddns\arnautovevgeny\pricelist\ProductCSVRowWithHeaders$ProductCSVRowHeadersCreator.class
 net\ddns\arnautovevgeny\pricelist\PriceList.class
 net\ddns\arnautovevgeny\pricelist\ResultOutputCsv.class
-net\ddns\arnautovevgeny\pricelist\FileHandlerCsv.class
 net\ddns\arnautovevgeny\pricelist\TasksBroker.class
-net\ddns\arnautovevgeny\pricelist\Consumer.class
 net\ddns\arnautovevgeny\pricelist\Product$ProductCSVCreator.class
-net\ddns\arnautovevgeny\pricelist\ProductCSVRowWithHeaders.class
-net\ddns\arnautovevgeny\pricelist\Producer.class
 net\ddns\arnautovevgeny\pricelist\ProductFromCsvRow.class
+net\ddns\arnautovevgeny\pricelist\ProductFromCSVRowByHeaders.class
 net\ddns\arnautovevgeny\pricelist\ProductFromStringArray.class
 net\ddns\arnautovevgeny\pricelist\ResultOutput.class
-net\ddns\arnautovevgeny\pricelist\FileHandler.class
 net\ddns\arnautovevgeny\pricelist\Product.class
-net\ddns\arnautovevgeny\pricelist\ProductFromCsvRow$ProductCSVRowSimpleCreator.class
+net\ddns\arnautovevgeny\pricelist\ProductFromCSVRowByHeaders$ProductCSVRowByHeadersCreator.class
