@@ -1,5 +1,5 @@
 **QUICK NOTE**
-    It's a demo task. Description is available via Google Docs.
+    It's a test task. Description is available via Google Docs.
     https://docs.google.com/document/d/1TMeXzjVrWCKqYH1jXp62JwZtSZ5qEkfOv-KejQB2g74/edit?usp=sharing
     
     I'm using Lombok, so if you haven't got it installed as 
@@ -18,6 +18,6 @@ I've made two variants of implementation:
 `    1. Using Stream API
      2. Using Producer-Consumer pattern and blocking queue for products`
      
-I've written an AutomationTest, which can generate *.csv files
+I've written an net.ddns.arnautovevgeny.pricelist.AutomationTest, which can generate *.csv files
 and then run tests on them.
 

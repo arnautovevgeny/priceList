@@ -72,3 +72,6 @@ fabric.properties
 
 # Ignore all log files
 *.log
+
+# Ignore all surefire reports
+target/surefire-reports/

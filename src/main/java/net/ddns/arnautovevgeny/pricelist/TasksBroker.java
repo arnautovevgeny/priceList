@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntUnaryOperator;
 
 @Slf4j
-public class TasksBroker implements AutoCloseable{
+public class TasksBroker implements AutoCloseable {
     private static final int maxProductsInQueue = 100000;
     private static final int maxProductsToProduce = maxProductsInQueue / 100;
     private static final int maxProductsToConsume = maxProductsToProduce / 2;

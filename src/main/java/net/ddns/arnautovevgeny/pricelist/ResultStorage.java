@@ -14,12 +14,12 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ResultStorage implements AutoCloseable {
     private class EntryById {
         private NavigableSet<Product> products = new ConcurrentSkipListSet<>();
-        private AtomicInteger approximateSize = new AtomicInteger();
+        private AtomicInteger size = new AtomicInteger();
 
         private boolean add(Product product) {
             boolean added = this.products.add(product);
             if (added) {
-                int count = this.approximateSize.incrementAndGet();
+                int count = this.size.incrementAndGet();
                 if (count == limitById)
                     idsToShrink.offer(product.getId());
             }
@@ -29,14 +29,14 @@ public class ResultStorage implements AutoCloseable {
         private boolean remove(Product product) {
             boolean removed = this.products.remove(product);
             if (removed)
-                this.approximateSize.decrementAndGet();
+                this.size.decrementAndGet();
             return removed;
         }
 
         private Product poll() {
             Product product = this.products.pollLast();
             if (product != null)
-                this.approximateSize.decrementAndGet();
+                this.size.decrementAndGet();
 
             return product;
         }
@@ -46,7 +46,7 @@ public class ResultStorage implements AutoCloseable {
         }
 
         private int size() {
-            return this.approximateSize.get();
+            return this.size.get();
         }
     }
 
@@ -75,7 +75,7 @@ public class ResultStorage implements AutoCloseable {
     private static final long outputProceedCount = 10000;
 
     private final NavigableSet<Product> storageTotal;
-    private final AtomicInteger size;
+    private final AtomicInteger sizeTotal;
     private final AtomicLong operationsCounter;
 
     private final AtomicLong readTotal;
@@ -95,7 +95,7 @@ public class ResultStorage implements AutoCloseable {
 
     {
         storageTotal = new ConcurrentSkipListSet<>();
-        size = new AtomicInteger();
+        sizeTotal = new AtomicInteger();
         operationsCounter = new AtomicLong();
 
         readTotal = new AtomicLong();
@@ -144,25 +144,25 @@ public class ResultStorage implements AutoCloseable {
                 removedSize++;
         }
 
-        int sizeAfterRemoving = this.size.addAndGet(-removedSize);
+        int sizeAfterRemoving = this.sizeTotal.addAndGet(-removedSize);
         log.debug("StorageById contains {} element after shrinkById", sizeAfterRemoving);
     }
 
-    private void shrinkResult() {
-        int size = this.size.get();
+    private void shrinkTotal() {
+        int size = this.sizeTotal.get();
 
         Collection<Product> removed = new LinkedList<>();
         for (int i = size; i > limitTotal; i--)
             removed.add(storageTotal.pollLast());
 
-        this.size.addAndGet(-removed.size());
+        this.sizeTotal.addAndGet(-removed.size());
 
         removeById(removed);
     }
 
     private void shrink() {
         shrinkById();
-        shrinkResult();
+        shrinkTotal();
     }
 
     public boolean addById(Product product) {
@@ -200,7 +200,7 @@ public class ResultStorage implements AutoCloseable {
 
         boolean added = storageTotal.add(product);
         if (added) {
-            size.incrementAndGet();
+            sizeTotal.incrementAndGet();
 
             long counter = operationsCounter.incrementAndGet();
             if (counter % operationsToCleanUp == 0L) {
@@ -246,14 +246,14 @@ public class ResultStorage implements AutoCloseable {
         this.entriesByIdPool.clear();
     }
 
-    public void addRead(int read) {
+    void addRead(int read) {
         if (!this.stopped.get()) {
             long productRead = this.readTotal.addAndGet(read);
             log.info("Totally {} products read", productRead);
         }
     }
 
-    public void setStopped() {
+    void setStopped() {
         log.info("All elements was read, totally read {}", this.readTotal.get());
 
         this.stopped.set(true);

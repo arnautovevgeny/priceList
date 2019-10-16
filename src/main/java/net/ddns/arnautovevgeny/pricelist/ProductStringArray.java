@@ -1,7 +1,7 @@
 package net.ddns.arnautovevgeny.pricelist;
 
-public class ProductCSVArray extends Product {
-    public ProductCSVArray(String[] values) {
+public class ProductStringArray extends Product {
+    public ProductStringArray(String[] values) {
         super(Integer.parseInt(values[0]),
                 values[1],
                 values[2],

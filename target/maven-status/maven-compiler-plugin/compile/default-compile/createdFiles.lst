@@ -1,5 +1,4 @@
 net\ddns\arnautovevgeny\pricelist\PriceList.class
-net\ddns\arnautovevgeny\pricelist\StorageResult$EntriesByIdPool.class
 net\ddns\arnautovevgeny\pricelist\ResultOutputCsv.class
 net\ddns\arnautovevgeny\pricelist\FileHandlerCsv.class
 net\ddns\arnautovevgeny\pricelist\TasksBroker.class
@@ -11,8 +10,6 @@ net\ddns\arnautovevgeny\pricelist\ProductCSVRowHeaders.class
 net\ddns\arnautovevgeny\pricelist\ResultOutput.class
 net\ddns\arnautovevgeny\pricelist\FileHandler.class
 net\ddns\arnautovevgeny\pricelist\Product.class
-net\ddns\arnautovevgeny\pricelist\StorageResult.class
-net\ddns\arnautovevgeny\pricelist\StorageResult$EntryById.class
-net\ddns\arnautovevgeny\pricelist\ProductCSVArray.class
+net\ddns\arnautovevgeny\pricelist\ProductStringArray.class
 net\ddns\arnautovevgeny\pricelist\ProductCSVRowSimple.class
 net\ddns\arnautovevgeny\pricelist\ProductCSVRowSimple$ProductCSVRowSimpleCreator.class
