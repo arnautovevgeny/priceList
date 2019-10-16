@@ -42,8 +42,8 @@ public class TasksBroker implements AutoCloseable {
     private final ExecutorService executorService;
     private final AtomicBoolean shutdownNeeded;
 
-    private final Producer producer;
-    private final Consumer consumer;
+    private final FileReader fileReader;
+    private final ProductHandler productHandler;
 
     private final AtomicInteger producersRequired;
     private final AtomicInteger consumersRequired;
@@ -56,9 +56,9 @@ public class TasksBroker implements AutoCloseable {
     private final Queue<String> filesList;
     private final AtomicInteger filesToProceedCounter;
 
-    private final Queue<FileHandler> activeHandlersPool;
-    private final Queue<FileHandler> inactiveHandlersPool;
-    private final List<Queue<FileHandler>> handlersPoolList;
+    private final Queue<FileHandle> activeHandlesPool;
+    private final Queue<FileHandle> inactiveHandlesPool;
+    private final List<Queue<FileHandle>> handlesPoolList;
 
     private final BlockingQueue<Product> productsList;
     private final AtomicInteger productsCounter;
@@ -71,8 +71,8 @@ public class TasksBroker implements AutoCloseable {
     private AtomicInteger chunkSizeToConsume;
 
     {
-        producer = new Producer(this);
-        consumer = new Consumer(this);
+        fileReader = new FileReader(this);
+        productHandler = new ProductHandler(this);
 
         producersRequired = new AtomicInteger(processorsCounter / 2);
         consumersRequired = new AtomicInteger(processorsCounter / 2);
@@ -86,8 +86,8 @@ public class TasksBroker implements AutoCloseable {
         filesList = new ConcurrentLinkedQueue<>();
         filesToProceedCounter = new AtomicInteger();
 
-        activeHandlersPool = new ConcurrentLinkedQueue<>();
-        inactiveHandlersPool = new ConcurrentLinkedQueue<>();
+        activeHandlesPool = new ConcurrentLinkedQueue<>();
+        inactiveHandlesPool = new ConcurrentLinkedQueue<>();
 
         productsList = new LinkedBlockingQueue<>(maxProductsInQueue);
 
@@ -98,7 +98,7 @@ public class TasksBroker implements AutoCloseable {
 
         shutdownNeeded = new AtomicBoolean();
 
-        handlersPoolList = List.of(activeHandlersPool, inactiveHandlersPool);
+        handlesPoolList = List.of(activeHandlesPool, inactiveHandlesPool);
 
         resultStorage = new ResultStorage();
     }
@@ -119,12 +119,12 @@ public class TasksBroker implements AutoCloseable {
         int consumersCount = consumersRequired.get();
 
         for (int i = producersCount; i > 0; i--) {
-            executorService.submit(producer);
+            executorService.submit(fileReader);
             producersActual.incrementAndGet();
         }
 
         for (int i = consumersCount; i > 0; i--) {
-            executorService.submit(consumer);
+            executorService.submit(productHandler);
             consumersActual.incrementAndGet();
         }
 
@@ -162,7 +162,7 @@ public class TasksBroker implements AutoCloseable {
                 int actual = producersActual.incrementAndGet();
                 log.debug("There are {} producers actual", actual);
 
-                executorService.submit(producer);
+                executorService.submit(fileReader);
             }
             else
                 producersRequired = this.producersRequired.decrementAndGet();
@@ -185,7 +185,7 @@ public class TasksBroker implements AutoCloseable {
                 int actual = consumersActual.incrementAndGet();
                 log.debug("There are {} consumers actual", actual);
 
-                executorService.submit(consumer);
+                executorService.submit(productHandler);
             }
             else
                 consumersCount = this.consumersRequired.decrementAndGet();
@@ -240,45 +240,45 @@ public class TasksBroker implements AutoCloseable {
         return productsChunk;
     }
 
-    void addFileHandler(FileHandler fileHandler) {
-        if (fileHandler.isActive())
-            this.activeHandlersPool.offer(fileHandler);
+    void addFileHandler(FileHandle fileHandle) {
+        if (fileHandle.isActive())
+            this.activeHandlesPool.offer(fileHandle);
         else
         {
             int count = this.filesToProceedCounter.decrementAndGet();
-            log.info("There are {} files left to proceed, last processed {}", count, fileHandler.getFileName());
+            log.info("There are {} files left to proceed, last processed {}", count, fileHandle.getFileName());
 
-            this.resultStorage.addRead(fileHandler.getLines());
+            this.resultStorage.addRead(fileHandle.getLines());
             if (count == 0)
                 this.resultStorage.setStopped();
             else
-                this.inactiveHandlersPool.offer(fileHandler.reset());
+                this.inactiveHandlesPool.offer(fileHandle.reset());
         }
     }
 
-    FileHandler getFileHandler() {
-        FileHandler handler = null;
+    FileHandle getFileHandler() {
+        FileHandle handle = null;
 
-        for (var fileHandlers : this.handlersPoolList) {
-            if ((handler = fileHandlers.poll()) != null) {
+        for (var fileHandlers : this.handlesPoolList) {
+            if ((handle = fileHandlers.poll()) != null) {
                 break;
             }
         }
 
-        if (handler == null || !handler.isActive()) {
+        if (handle == null || !handle.isActive()) {
             String fileName = this.filesList.poll();
             if (fileName == null)
-                handler = null;
+                handle = null;
             else
             {
-                if (handler == null)
-                    handler = new FileHandlerCsv(containsHeaders, delimiter, chunkSizeToProduce.get());
+                if (handle == null)
+                    handle = new FileHandleCsv(containsHeaders, delimiter, chunkSizeToProduce.get());
 
-                handler.setFileName(fileName);
+                handle.setFileName(fileName);
             }
         }
 
-        return handler;
+        return handle;
     }
 
     boolean producerRequired() {
@@ -303,8 +303,8 @@ public class TasksBroker implements AutoCloseable {
         updateProcessingState();
     }
 
-    void processProduct(Product product) {
-        this.resultStorage.proceed(product);
+    void handleProduct(Product product) {
+        this.resultStorage.handle(product);
     }
 
     public void awaitsTermination() throws InterruptedException {

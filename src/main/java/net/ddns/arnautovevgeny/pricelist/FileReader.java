@@ -6,28 +6,29 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-public class Producer implements Runnable {
+// Producer
+public class FileReader implements Runnable {
     private TasksBroker tasksBroker;
 
-    public Producer(TasksBroker tasksBroker) {
+    public FileReader(TasksBroker tasksBroker) {
         this.tasksBroker = tasksBroker;
     }
 
     @Override
     public void run() {
         do {
-            FileHandler fileHandler;
-            fileCycle: while ((fileHandler = tasksBroker.getFileHandler()) != null) {
+            FileHandle fileHandle;
+            fileCycle: while ((fileHandle = tasksBroker.getFileHandler()) != null) {
                 Optional<List<Product>> products;
-                while ((products = fileHandler.getProducts()).isPresent()) {
+                while ((products = fileHandle.getProducts()).isPresent()) {
                     tasksBroker.addProducts(products.get());
 
                     if (tasksBroker.productQueueIsFull()) {
-                        tasksBroker.addFileHandler(fileHandler);
+                        tasksBroker.addFileHandler(fileHandle);
                         break fileCycle;
                     }
                 }
-                tasksBroker.addFileHandler(fileHandler);
+                tasksBroker.addFileHandler(fileHandle);
             }
         }
         while (tasksBroker.producerRequired());

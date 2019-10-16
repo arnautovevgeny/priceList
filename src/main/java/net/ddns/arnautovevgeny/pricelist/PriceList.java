@@ -68,7 +68,7 @@ public class PriceList {
                 return Stream.empty();
             });
 
-            lines.map(line -> new ProductFromStringArray(line.split(strDelimiter))).forEach(resultStorage::proceed);
+            lines.map(line -> new ProductFromStringArray(line.split(strDelimiter))).forEach(resultStorage::handle);
             this.products = resultStorage.getResult();
         }
     }

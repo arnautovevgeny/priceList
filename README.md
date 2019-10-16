@@ -16,8 +16,8 @@ Lower prices and ids come first, string are sorted in a natural alphabetical ord
 
 I've made two variants of implementation:
 `    1. Using Stream API
-     2. Using Producer-Consumer pattern and blocking queue for products`
+     2. Using Producer-Consumer pattern and blocking queue for products
+     FileReader is a producer. Product handler is a consumer`
      
-I've written an net.ddns.arnautovevgeny.pricelist.AutomationTest, which can generate *.csv files
+I've written an net.ddns.arnautovevgeny.pricelist.AutomationTest, which can generate a lot of *.csv files
 and then run tests on them.
-

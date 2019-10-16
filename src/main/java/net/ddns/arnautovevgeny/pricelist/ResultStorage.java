@@ -165,7 +165,7 @@ public class ResultStorage implements AutoCloseable {
         shrinkTotal();
     }
 
-    public boolean addById(Product product) {
+    private boolean addById(Product product) {
         log.debug("Adding product by id {}", product.getId());
 
         EntryById newEntry = this.entriesByIdPool.get();
@@ -223,7 +223,7 @@ public class ResultStorage implements AutoCloseable {
         return new LinkedList<>(this.storageTotal);
     }
 
-    public void proceed(Product product) {
+    public void handle(Product product) {
         if (this.addById(product))
             this.addTotal(product);
 

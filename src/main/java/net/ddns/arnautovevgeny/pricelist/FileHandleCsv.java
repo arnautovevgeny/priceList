@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
-public class FileHandlerCsv implements FileHandler {
+public class FileHandleCsv implements FileHandle {
     private final CsvReader csvReader;
     private final Product.ProductCSVCreator productsCreator;
     private final int chunkSize;
@@ -32,7 +32,7 @@ public class FileHandlerCsv implements FileHandler {
         linesRead.set(0);
     }
 
-    FileHandlerCsv(boolean containsHeaders, char delimiter, int chunkSize) {
+    FileHandleCsv(boolean containsHeaders, char delimiter, int chunkSize) {
         this.csvReader = new CsvReader();
         this.csvReader.setContainsHeader(containsHeaders);
         this.csvReader.setFieldSeparator(delimiter);
@@ -72,7 +72,7 @@ public class FileHandlerCsv implements FileHandler {
     }
 
     @Override
-    public FileHandler reset() {
+    public FileHandle reset() {
         this.filename = null;
         this.linesRead.set(0);
 

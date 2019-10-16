@@ -6,12 +6,13 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
-public class Consumer implements Runnable {
+// Consumer
+public class ProductHandler implements Runnable {
     private static final AtomicInteger productsTotal = new AtomicInteger();
     private static final int productsToInfoOutput = 10000;
 
     private TasksBroker tasksBroker;
-    public Consumer(TasksBroker tasksBroker) {
+    public ProductHandler(TasksBroker tasksBroker) {
         this.tasksBroker = tasksBroker;
     }
 
@@ -27,7 +28,7 @@ public class Consumer implements Runnable {
                 }
 
                 for(Product product : products) {
-                   tasksBroker.processProduct(product);
+                   tasksBroker.handleProduct(product);
                 }
             }
         }
