@@ -194,8 +194,7 @@ class AutomationTest {
         });
     }
 
-    private static Stream<Product> generateProducts()
-    {
+    private static Stream<Product> generateProducts() {
         calcExpectedResult();
 
         int expectedResultSize = expectedProducts.size();

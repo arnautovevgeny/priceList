@@ -51,7 +51,7 @@ public class PriceList {
 
     public void processViaStreamAPI(String[] csvFiles) {
         String strDelimiter = "" + this.delimiter;
-        try (StorageResult storageResult = new StorageResult()) {
+        try (ResultStorage resultStorage = new ResultStorage()) {
 
             Stream<Path> pathStream = Stream.of(csvFiles).parallel().map(file -> Paths.get(file));
             Stream<String> lines = pathStream.flatMap(path -> {
@@ -68,8 +68,8 @@ public class PriceList {
                 return Stream.empty();
             });
 
-            lines.map(line -> new ProductCSVArray(line.split(strDelimiter))).forEach(storageResult::proceed);
-            this.products = storageResult.getResult();
+            lines.map(line -> new ProductCSVArray(line.split(strDelimiter))).forEach(resultStorage::proceed);
+            this.products = resultStorage.getResult();
         }
     }
 

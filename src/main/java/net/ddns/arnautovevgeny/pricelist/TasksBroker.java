@@ -64,7 +64,7 @@ public class TasksBroker implements AutoCloseable{
     private final AtomicInteger productsCounter;
     private final AtomicInteger queueFullWarnings;
 
-    private final StorageResult storageResult;
+    private final ResultStorage resultStorage;
 
     private boolean loadBalancer;
     private AtomicInteger chunkSizeToProduce;
@@ -100,7 +100,7 @@ public class TasksBroker implements AutoCloseable{
 
         handlersPoolList = List.of(activeHandlersPool, inactiveHandlersPool);
 
-        storageResult = new StorageResult();
+        resultStorage = new ResultStorage();
     }
 
     public TasksBroker(String[] csvFiles, boolean containsHeaders, char delimiter) {
@@ -195,7 +195,7 @@ public class TasksBroker implements AutoCloseable{
     }
 
     private boolean isReady() {
-        return this.storageResult.isReady();
+        return this.resultStorage.isReady();
     }
 
     boolean productQueueIsFull() {
@@ -248,9 +248,9 @@ public class TasksBroker implements AutoCloseable{
             int count = this.filesToProceedCounter.decrementAndGet();
             log.info("There are {} files left to proceed, last processed {}", count, fileHandler.getFileName());
 
-            this.storageResult.addRead(fileHandler.getLines());
+            this.resultStorage.addRead(fileHandler.getLines());
             if (count == 0)
-                this.storageResult.setStopped();
+                this.resultStorage.setStopped();
             else
                 this.inactiveHandlersPool.offer(fileHandler.reset());
         }
@@ -304,7 +304,7 @@ public class TasksBroker implements AutoCloseable{
     }
 
     void processProduct(Product product) {
-        this.storageResult.proceed(product);
+        this.resultStorage.proceed(product);
     }
 
     public void awaitsTermination() throws InterruptedException {
@@ -313,7 +313,7 @@ public class TasksBroker implements AutoCloseable{
 
     public Collection<Product> getResult() {
         if (this.isReady())
-            return this.storageResult.getResult();
+            return this.resultStorage.getResult();
         else {
             log.error("Trying to get result while not ready");
             return new LinkedList<>();
@@ -322,6 +322,6 @@ public class TasksBroker implements AutoCloseable{
 
     @Override
     public void close() {
-        this.storageResult.close();
+        this.resultStorage.close();
     }
 }
