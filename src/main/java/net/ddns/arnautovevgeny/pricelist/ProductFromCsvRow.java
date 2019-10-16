@@ -3,7 +3,7 @@ package net.ddns.arnautovevgeny.pricelist;
 import de.siegmar.fastcsv.reader.CsvRow;
 
 public class ProductFromCsvRow extends Product {
-    interface ProductCSVRowSimpleCreator extends Product.ProductCSVCreator {
+    interface ProductCSVRowCreator extends Product.ProductCSVCreator {
         ProductFromCsvRow create(CsvRow row);
     }
 

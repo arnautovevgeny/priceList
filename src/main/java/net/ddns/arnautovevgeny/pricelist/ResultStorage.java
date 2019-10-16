@@ -195,7 +195,7 @@ public class ResultStorage implements AutoCloseable {
         return added;
     }
 
-    private void add(Product product) {
+    private void addTotal(Product product) {
         log.debug("Adding to result set {}", product);
 
         boolean added = storageTotal.add(product);
@@ -225,7 +225,7 @@ public class ResultStorage implements AutoCloseable {
 
     public void proceed(Product product) {
         if (this.addById(product))
-            this.add(product);
+            this.addTotal(product);
 
         long proceed = this.proceedTotal.incrementAndGet();
         if (proceed % outputProceedCount == 0)

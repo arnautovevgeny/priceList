@@ -1,6 +1,6 @@
 **QUICK NOTE**
     It's a test task. Description is available via Google Docs.
-    https://docs.google.com/document/d/1TMeXzjVrWCKqYH1jXp62JwZtSZ5qEkfOv-KejQB2g74/edit?usp=sharing
+    https://docs.google.com/document/d/1fOCWwDi43Oe3fjXVG29dUqaZEFepSJS8dfMojH1hr0o/edit?usp=sharing
     
     I'm using Lombok, so if you haven't got it installed as 
     an IntelliJ IDEA plugin, highlighting wouldn't work.
