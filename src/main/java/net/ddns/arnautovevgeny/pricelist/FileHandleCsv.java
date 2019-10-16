@@ -37,7 +37,7 @@ public class FileHandleCsv implements FileHandle {
         this.csvReader.setContainsHeader(containsHeaders);
         this.csvReader.setFieldSeparator(delimiter);
 
-        this.productsCreator = containsHeaders ? ProductFromCSVRowByHeaders::new : ProductFromCsvRow::new;
+        this.productsCreator = containsHeaders ? ProductCsvByHeader::new : ProductCsvByIndex::new;
 
         this.chunkSize = chunkSize;
     }

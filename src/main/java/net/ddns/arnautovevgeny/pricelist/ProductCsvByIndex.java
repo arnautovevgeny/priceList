@@ -2,12 +2,12 @@ package net.ddns.arnautovevgeny.pricelist;
 
 import de.siegmar.fastcsv.reader.CsvRow;
 
-public class ProductFromCsvRow extends Product {
-    interface ProductCSVRowCreator extends Product.ProductCSVCreator {
-        ProductFromCsvRow create(CsvRow row);
+public class ProductCsvByIndex extends Product {
+    interface ProductCsvByIndexCreator extends Product.ProductCSVCreator {
+        ProductCsvByIndex create(CsvRow row);
     }
 
-    public ProductFromCsvRow(CsvRow row) {
+    public ProductCsvByIndex(CsvRow row) {
         super(Integer.parseInt(row.getField(0)),
                 row.getField(1),
                 row.getField(2),
