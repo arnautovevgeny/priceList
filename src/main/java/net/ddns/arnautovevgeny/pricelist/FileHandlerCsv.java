@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class FileHandlerCsv implements FileHandler {
     private final CsvReader csvReader;
-    private final ProductCSVRowHeaders.ProductCSVCreator productsCreator;
+    private final ProductCSVRowWithHeaders.ProductCSVCreator productsCreator;
     private final int chunkSize;
 
     private volatile String filename;
@@ -37,7 +37,7 @@ public class FileHandlerCsv implements FileHandler {
         this.csvReader.setContainsHeader(containsHeaders);
         this.csvReader.setFieldSeparator(delimiter);
 
-        this.productsCreator = containsHeaders ? ProductCSVRowHeaders::new : ProductCSVRowSimple::new;
+        this.productsCreator = containsHeaders ? ProductCSVRowWithHeaders::new : ProductFromCsvRow::new;
 
         this.chunkSize = chunkSize;
     }
